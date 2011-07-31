@@ -20,6 +20,13 @@ void setupControlInterface() {
   resetBtn.setGroup(calibration);
   resetBtn.setLabel("Reset");
   
+  Toggle slewToggle = controlP5.addToggle("slewSwitch");
+  slewToggle.setGroup(calibration);
+  slewToggle.setLabel("Slew");
+  
+  Slider slewSlider = controlP5.addSlider("slew",60.0,99.99,slew,0,50,200,10);
+  slewSlider.setGroup(calibration);
+  
   controlP5.end();
   
   ControlGroup[] lampControlGroups = new ControlGroup[group_num];
@@ -48,24 +55,23 @@ void setupControlInterface() {
   }
   
   
-  ControlGroup peakOut = controlP5.addGroup("Peak Output", 10, 80);
+  ControlGroup peakOut = controlP5.addGroup("Peak Output", 10, 110);
   controlP5.begin(0,10);
   
   peakCP = controlP5.addColorPicker("peak color",0,10,255,20);
+  peakCP.setColorValue(color(0,0,255,255));
   peakCP.setGroup(peakOut);
   
   controlP5.end();
   
-  ControlGroup normalOut = controlP5.addGroup("Normal Output", 10, 170);
+  ControlGroup normalOut = controlP5.addGroup("Normal Output", 10, 200);
   controlP5.begin(0,10);
   
   normalCP = controlP5.addColorPicker("normal color",0,10,255,20);
+  normalCP.setColorValue(color(255,0,0,200));
   normalCP.setGroup(normalOut);
   
   controlP5.end();
-  
-  
-  
   
 }
 

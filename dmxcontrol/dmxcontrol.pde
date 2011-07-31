@@ -32,11 +32,13 @@ int[] lampGroups = {1, 130, 20}; // DMX addresses for lamp groups
 int[] groupsMin = {20,800,5000}; // minimum threshold for lamp groups in Hz
 int[] groupsMax = {50,2500,8000}; // maximum threshold for lamp groups in Hz
 
-float[] lastAvgs = new float[group_num];
 float[] avgs = new float[group_num];
 float[] avgsMax = new float[group_num];
 float[] avgsMin = new float[group_num];
 float[] lightValues = new float[group_num];
+
+float slew = 94.999;
+boolean slewSwitch = true;
 
 boolean autoCalibrate = true;
 
@@ -56,9 +58,8 @@ public void resetCalibration() {
 void setup() {
   println(Serial.list()); // shows available serial ports on the system
 
-  size(1100,700,OPENGL);  // Create a window
+  size(1275,750,OPENGL);  // Create a window
   frameRate(30);
-  smooth();
   
   resetCalibration();
   setupControlInterface();
@@ -95,6 +96,15 @@ void draw() {
   fft.forward(in.mix);
   
   
+  // draw the waveforms
+  for(int i = 0; i < in.bufferSize() - 1; i++)
+  {
+    stroke(30, 30, 250);
+    line(i, height/2 - 50 + in.left.get(i)*50, i+1, height/2 - 50 + in.left.get(i+1)*50);
+    stroke(30, 30, 250);
+    line(i, height/2 + 50 + in.right.get(i)*50, i+1, height/2 + 50 + in.right.get(i+1)*50);
+  }
+  
   for(int i = 0; i < group_num; i++)
   {
     avgs[i] = fft.calcAvg(groupsMin[i], groupsMax[i]);
@@ -104,18 +114,20 @@ void draw() {
   w = int(width/fft.avgSize());
   for(int i = 0; i < fft.avgSize(); i++)
   {
-    fill(55);
-    noStroke();
-    rect(i*w, height, i*w + w, height - fft.getAvg(i)*2);
+    fill(40);
+    stroke(80);
+    rect(i*w+2, height, i*w + w -2, height - 30 - fft.getAvg(i));
     
   }
   
-  
   w = int((width/2)/group_num);
+  
+  fill(0);
+  noStroke();
+  rect(0, height, width, height-30); 
+  
   for(int i = 0; i < group_num; i++)
   {
-    fill(220, 220, 10);
-    noStroke();
     
     float m = sqrt(groupsMax[i] - groupsMin[i])/4;
     
@@ -123,16 +135,21 @@ void draw() {
       updateThresholdInputs(i);
     }
     
-    rect(i*w, height-100, i*w + w, height - 100 - avgs[i]*m);
+    fill(100, 100, 220, 200);
+    noStroke();
+    rect(i*w + 2, height-30, i*w + w - 2, height - 30 - avgs[i]*m);
     
-    stroke(10, 10, 240);
-    float mx = height - 100 - avgsMax[i]*m;
-    float mn = height - 100 - avgsMin[i]*m;
-    line(i*w, mx, i*w + w, mx);
-    line(i*w, mn, i*w + w, mn);
+    
+    stroke(0, 255, 255);
+    float mx = height - 30 - avgsMax[i]*m;
+    float mn = height - 30 - avgsMin[i]*m;
+    line(i*w + 2, mx, i*w + w - 2, mx);  
+    
+    stroke(255, 255, 0);
+    line(i*w + 2, mn, i*w + w - 2, mn);
     
     fill(255);
-    text(groupsMin[i] + "Hz - " + groupsMax[i] + "Hz", (i*w) + 10, height-180);
+    text(groupsMin[i] + "Hz - " + groupsMax[i] + "Hz", (i*w) + 10, height-10);
   }
   
   for (int i = 0; i < avgs.length; i++) {
@@ -150,22 +167,30 @@ void draw() {
           avgs[i] = avgsMin[i];
         }
      }
-      
-     lightValues[i] = map(avgs[i], avgsMin[i], avgsMax[i], 0, 255);     
-     lastAvgs[i] = avgs[i];
+     
+     
+     float mapped = map(avgs[i], avgsMin[i], avgsMax[i], 0, 255);
+     
+     if (mapped > lightValues[i]) {
+       lightValues[i] = mapped;
+     }
   }
   
   w = int((width/2)/group_num);
+  
+
+  fill(150, 20, 20, 70);
+  
+  noStroke();
+  rect(width/2, height-(255*2) + ((255*2)/100*10) - 30, width, height-(255*2)-30);
+  
   for(int i = 0; i < group_num; i++)
   {
     noStroke();
-    fill(255);
-    rect(i*w + width/2, height-100, i*w + w + width/2, height - 100 - lightValues[i]);
-  } 
-  
-  //normalColor = normalCP.getColorValue();
-  
-  
+    fill(255, 255, 255, lightValues[i]);
+    rect(i*w + width/2 + 2, height - 30, i*w + w + width/2 - 2, height - 30 - (lightValues[i]*2));
+    
+  }
   
   for(int i = 0; i < group_num; i++)
   {
@@ -188,24 +213,15 @@ void draw() {
      setColor(red(cc), green(cc), blue(cc), i, intensity);   
   }
   
-  
-  //for (int i = 0; i < lightValues.length; i++) {
-  //    lightValues[i] = lightValues[i];
-  //} 
-  
-  // draw the waveforms
-  
-  for(int i = 0; i < in.bufferSize() - 1; i++)
+  for(int i = 0; i < group_num; i++)
   {
-    stroke(255, 0, 0);
-    line(i, 50 + in.left.get(i)*50, i+1, 50 + in.left.get(i+1)*50);
-    stroke(0, 255, 0);
-    line(i, 150 + in.right.get(i)*50, i+1, 150 + in.right.get(i+1)*50);
-  } 
-}
-
-void updateMouse(int x, int y)
-{
+    if (slewSwitch) {
+      lightValues[i] = lightValues[i] * (slew/100);
+    } else {
+     lightValues[i] = 0; 
+    }
+  }
+  
 }
 
 void stop()
