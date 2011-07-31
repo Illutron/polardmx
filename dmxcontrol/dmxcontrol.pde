@@ -19,6 +19,9 @@ Minim minim;
 AudioInput in;
 FFT fft;
 
+int[] peakColor = new int[3];
+int[] normalColor = new int[3];
+
 import processing.serial.*;  // Import Serial library to talk to Arduino 
 import processing.opengl.*; //  Import OpenGL to draw a gradient window
 
@@ -160,15 +163,29 @@ void draw() {
     rect(i*w + width/2, height-100, i*w + w + width/2, height - 100 - lightValues[i]);
   } 
   
+  //normalColor = normalCP.getColorValue();
+  
+  
+  
   for(int i = 0; i < group_num; i++)
-  {   
+  {
+    int cc = 1;
+    float intensity = 1;
+    
      if (lightValues[i]/255*100 > 90) {
-       setColor(255 - int(lightValues[i]), 0, int(lightValues[i]), i);
+       
+       intensity = alpha(peakCP.getColorValue()) / 255 * lightValues[i];
+       cc = peakCP.getColorValue();     
+       
      } else if (lightValues[i]/255*100 < 1) {
        
      } else {
-       setColor(int(lightValues[i]), 0, 0, i);
+       
+       intensity = alpha(normalCP.getColorValue()) / 255 * lightValues[i];
+       cc = normalCP.getColorValue();
+       
      }
+     setColor(red(cc), green(cc), blue(cc), i, intensity);   
   }
   
   

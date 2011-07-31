@@ -3,6 +3,9 @@ ControlP5 controlP5;
 
 Range[] thresholdRanges = new Range[group_num];
 
+ColorPicker peakCP;
+ColorPicker normalCP;
+
 void setupControlInterface() {
   controlP5 = new ControlP5(this);
   
@@ -43,6 +46,26 @@ void setupControlInterface() {
      
      controlP5.end();
   }
+  
+  
+  ControlGroup peakOut = controlP5.addGroup("Peak Output", 10, 80);
+  controlP5.begin(0,10);
+  
+  peakCP = controlP5.addColorPicker("peak color",0,10,255,20);
+  peakCP.setGroup(peakOut);
+  
+  controlP5.end();
+  
+  ControlGroup normalOut = controlP5.addGroup("Normal Output", 10, 170);
+  controlP5.begin(0,10);
+  
+  normalCP = controlP5.addColorPicker("normal color",0,10,255,20);
+  normalCP.setGroup(normalOut);
+  
+  controlP5.end();
+  
+  
+  
   
 }
 
@@ -92,7 +115,6 @@ void controlEvent(ControlEvent theEvent) {
     }
     
     uiThresholdForceUpdate = false;
-     
   }
   
 }

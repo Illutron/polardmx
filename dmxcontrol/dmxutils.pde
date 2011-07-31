@@ -4,9 +4,10 @@ void setDmxChannel(int channel, int value) {
   myPort.write( str(channel) + "c" + str(value) + "w" );
 }
 
-void setColor(int r, int g, int b, int lampGroup) {
-  int rgb[] = {r, g, b};
+void setColor(float r, float g, float b, int lampGroup, float intensity) {
+  float rgb[] = {r, g, b};
   for (int i = 0; i < 3; i++) {
-    setDmxChannel(lampGroups[lampGroup] + i, rgb[i]);
+    rgb[i] = rgb[i]/255*intensity;
+    setDmxChannel(lampGroups[lampGroup] + i, int(rgb[i]));
   }
 }
