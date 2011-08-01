@@ -16,7 +16,7 @@
 
 #include <DmxSimple.h>
 
-const int dmxPin = 11;
+int dmxPin = 11;
 
 void setup() {
   Serial.begin(9600);

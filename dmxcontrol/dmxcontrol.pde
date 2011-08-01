@@ -74,12 +74,15 @@ void setup() {
   // get a line in from Minim, default bit depth is 16
   in = minim.getLineIn(Minim.STEREO, 2048);
   fft = new FFT(in.bufferSize(), in.sampleRate());  
-  fft.logAverages(20, 3);
+  fft.logAverages(20, 8);
   rectMode(CORNERS);
   
   // set dim channel to full on all lamp groups
+  
+  setDmxChannel(4, 255);
+  
   for (int g = 0; g < lampGroups.length; g++) {
-    setDmxChannel(lampGroups[g] + 3, 189);
+    setDmxChannel(lampGroups[g] + 3, 155);
   }
   
 }
@@ -111,8 +114,8 @@ void draw() {
   }
  
    
-  w = int(width/fft.avgSize());
-  for(int i = 0; i < fft.avgSize(); i++)
+  w = int(width/60);
+  for(int i = 0; i < 60; i++)
   {
     fill(40);
     stroke(80);
